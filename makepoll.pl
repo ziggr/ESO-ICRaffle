@@ -22,6 +22,7 @@ push @files, 'ICRaffle.lua';
 push @files, 'ICRaffleRoster.lua';
 push @files, 'ICRaffleMM.lua';
 push @files, 'ICRaffleUI.lua';
+push @files, 'ICRaffleUserRecord.lua';
 print join("\n", @files) . "\n";
 
 @prev_mtime = ();

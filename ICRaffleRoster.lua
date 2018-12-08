@@ -13,25 +13,18 @@ function ICRaffle.DailyRosterCheck()
     self = ICRaffle
                         -- NOP if already checked once today.
     if not ICRaffle.DailyRosterCheckNeeded() then
-        --ICRaffle.Info("Guild roster already saved once today. Done.")
+        ICRaffle.Debug("Guild roster already saved once today. Done.")
         return
     end
 
-    self.Info("saving guild rosters...")
     self.FetchHistoryStart()
-    -- local ct = self.RememberMembers()
-    -- self.Info("saved %d guild members. Done.", ct)
-
-    -- if not self.saved_var.roster then self.saved_var.roster = {} end
-    -- self.saved_var.roster.last_scan_ts = self.TodayTS()
 end
 
 function ICRaffle.DailyRosterCheckNeeded()
     self = ICRaffle
     if not (    self.saved_var 
-            and self.saved_var.roster
-            and self.saved_var.roster.last_scan_ts) then return true end
-    if not (self.TodayTS() <= self.saved_var.roster.last_scan_ts)  then return true end
+            and self.saved_var.roster_last_scan_ts) then return true end
+    if not (self.TodayTS() <= self.saved_var.roster_last_scan_ts)  then return true end
     return false
 end
 
@@ -49,6 +42,7 @@ end
 
 function ICRaffle.FetchHistoryStart()
     self = ICRaffle
+    self.Info("Fetching guild roster history...")
     self.gh_category = GUILD_HISTORY_GENERAL
     self.guild_id    = GetGuildId(self.saved_var.guild_index)
 
@@ -73,9 +67,12 @@ end
 
 function ICRaffle.FetchHistoryNextPage()
     self = ICRaffle
-    local requested = RequestGuildHistoryCategoryOlder(self.guild_id, self.gh_category)
-    self.Debug("requested older: %s", tostring(requested))
+    local requested = nil
+    if not self.GuildHistoryOldEnough() then
                         -- Returns false when there's no more to request.
+        requested = RequestGuildHistoryCategoryOlder(self.guild_id, self.gh_category)
+        self.Debug("requested older: %s", tostring(requested))
+    end
     if not requested then
         self.OnFetchHistoryComplete()
     end
@@ -86,6 +83,7 @@ end
 function ICRaffle.OnGuildHistoryResponseReceived(event_code, guild_id, category)
     local self = ICRaffle
     self.ReportGuildHistoryStatus()   
+
                         -- Wait 2 seconds between requests to give UI time  to
                         -- breathe, and to avoid getting kicked from server for
                         -- too many requests. Could probably tighten this up to
@@ -106,6 +104,16 @@ function ICRaffle.ReportGuildHistoryStatus()
         time_ago = time_ago .. " ago"
     end
     self.Debug("response received, event_ct: %d  %s",event_ct, time_ago)
+end
+
+function ICRaffle.GuildHistoryOldEnough()
+    local self = ICRaffle
+    if not self.saved_var.roster_last_scan_ts then return nil end
+    local event_ct = GetNumGuildEvents(self.guild_id, self.gh_category)
+    local event    = { GetGuildEventInfo(self.guild_id, self.gh_category, event_ct) }
+    local secs_ago = (event and event[2])
+    local event_ts = ICRaffle.SecsAgoToTS(secs_ago)
+    return event_ts < self.saved_var.roster_last_scan_ts
 end
 
 function ICRaffle.OnFetchHistoryComplete()
@@ -158,52 +166,42 @@ end
 
 function ICRaffle.ScanRoster()
     self = ICRaffle
-    local roster = self.RosterList()
-    -- ...
-end
 
--- function ICRaffle:RememberMembers(guild_index)
---     local today_ts = self.TodayTS()
---     local prev     = {}
---     local new      = {}
---     if self.saved_var.roster and self.saved_var.roster[guild_index] then
---         prev = self.saved_var.roster[guild_index]
---     end
-
---     local curr = self.RosterList(guild_index)
---     for i, user_id in ipairs(curr) do
---                         -- Retain any survivors from before.
---                         -- or create new record for newbies.
---         new[user_id] = prev[user_id] or { first_seen_ts = today_ts }
---     end
-
---     if not self.saved_var.roster then self.saved_var.roster = {} end
---     self.saved_var.roster[guild_index] = new
---     return #curr
--- end
-
-function ICRaffle.RosterList()
-    self = ICRaffle
-    local member_names = {}
-    local guildId = GetGuildId(self.saved_var.guild_index)
-    local ct      = GetNumGuildMembers(guildId)
-    for i = 1, ct do
-        local user_id = GetGuildMemberInfo(guildId, i)
-        table.insert(member_names, user_id)
+                            -- Mark the unworthy for a later purge.
+    self.user_records = self.user_records or {}                        
+    for _,ur in pairs(self.user_records) do
+        ur.is_member = nil
     end
-    return member_names
+
+                            -- Fetch complete, current, guild member list
+    local guild_id = GetGuildId(self.saved_var.guild_index)
+    local ct = GetNumGuildMembers(guild_id)
+    for i = 1, ct do
+        local user_id, note, rank_index = GetGuildMemberInfo(guild_id, i)
+        local ur = self.User(user_id)
+        ur.is_member  = true
+        ur.rank_index = rank_index
+        ur.guild_node = note
+    end
+
+                        -- Purge the unworthy
+    local delete_list = {}
+    for user_id,ur in pairs(self.user_records) do
+        if not ur.is_member then
+            table.insert(delete_list,user_id)
+        end
+    end
+    for _,user_id in ipairs(delete_list) do
+        self.user_records[user_id] = nil
+    end
+                        -- Record the survivors to saved variables.
+    self.user_records = self.user_records or {}
+    self.saved_var.roster_last_scan_ts = self.TodayTS()
+    self.UserRecordsToSavedVars()
+    self.Info("Guild roster saved. Member count: %d.", ct)
+    self.Info("Will be written to SavedVariables next %s/reloadui|r %sor %s/logout|r."
+             , ICRaffle.color.white
+             , ICRaffle.color.grey
+             , ICRaffle.color.white )
 end
-
-
-
--- function ICRaffle:RememberMembersAllEnabledGuilds()
---     self.saved_var.guild_name = self:GuildNameList()
---     local ct = 0
---     for guild_index = 1, self.max_guild_ct do
---         if self.saved_var.enable_guild[guild_index] then
---             ct = ct + self:RememberMembers(guild_index)
---         end
---     end
---     return ct
--- end
 

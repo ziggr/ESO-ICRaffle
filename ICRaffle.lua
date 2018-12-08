@@ -33,17 +33,20 @@ ICRaffle.max_retry_ct = 3
                         -- Filled in partially by MMDateRanges(), fully by FetchMMDateRanges()
 ICRaffle.mm_date_ranges = nil
 
-local color grey  = "|c999999"
-local color red   = "|cFF6666"
-local color green = "|c66FF66"
+ICRaffle.color = {}
+ICRaffle.color.dark  = "|c666666"
+ICRaffle.color.grey  = "|c999999"
+ICRaffle.color.red   = "|cFF6666"
+ICRaffle.color.green = "|c66FF66"
+ICRaffle.color.white = "|cFFFFFF"
 function ICRaffle.Debug(msg, ...)
-    d(grey..ICRaffle.name..": "..string.format(msg, ...))
+    d(ICRaffle.color.dark..ICRaffle.name..": "..string.format(msg, ...))
 end
 function ICRaffle.Info(msg, ...)
-    d(grey..ICRaffle.name..": "..string.format(msg, ...))
+    d(ICRaffle.color.grey..ICRaffle.name..": "..string.format(msg, ...))
 end
 function ICRaffle.Error(msg, ...)
-    d(red ..ICRaffle.name..": "..string.format(msg, ...))
+    d(ICRaffle.color.red ..ICRaffle.name..": "..string.format(msg, ...))
 end
 
 function ICRaffle.SecsAgoToTS(secs_ago)
@@ -284,6 +287,7 @@ function ICRaffle:Initialize()
                             , nil
                             , self.default
                             )
+    self.SavedVarsToUserRecords()
     -- self:CreateSettingsWindow()
 end
 
@@ -467,7 +471,13 @@ EVENT_MANAGER:RegisterForEvent( ICRaffle.name
                               , EVENT_ADD_ON_LOADED
                               , ICRaffle.OnAddOnLoaded
                               )
--- EVENT_MANAGER:RegisterForEvent( ICRaffle.name
---                               , EVENT_PLAYER_ACTIVATED
---                               , ICRaffle.DailyRosterCheck
---                               )
+
+
+                        -- Need to call DailyRosterCheck() from a function()
+                        -- wrapper here because DailyRosterCheck() is not
+                        -- defined in this file or by the time we execute this
+                        -- code at load time.
+EVENT_MANAGER:RegisterForEvent( ICRaffle.name
+                              , EVENT_PLAYER_ACTIVATED
+                              , function() ICRaffle.DailyRosterCheck() end
+                              )

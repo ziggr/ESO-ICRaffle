@@ -10,3 +10,4 @@ ICRaffle.lua
 ICRaffleRoster.lua
 # ICRaffleMM.lua
 # ICRaffleUI.lua
+ICRaffleUserRecord.lua
