@@ -24,7 +24,9 @@ function ICRaffle.DailyRosterCheckNeeded()
     self = ICRaffle
     if not (    self.saved_var 
             and self.saved_var.roster_last_scan_ts) then return true end
-    if not (self.TodayTS() <= self.saved_var.roster_last_scan_ts)  then return true end
+    if not (self.TodayTS() <= self.saved_var.roster_last_scan_ts) then
+        return true
+    end
     return false
 end
 
@@ -43,8 +45,8 @@ end
 function ICRaffle.FetchHistoryStart()
     self = ICRaffle
     self.Info("Fetching guild roster history...")
-    self.gh_category = GUILD_HISTORY_GENERAL
-    self.guild_id    = GetGuildId(self.saved_var.guild_index)
+    self.guild_history_category = GUILD_HISTORY_GENERAL
+    self.guild_id               = GetGuildId(self.saved_var.guild_index)
 
     EVENT_MANAGER:RegisterForEvent(
               self.name
@@ -57,8 +59,10 @@ end
 
 function ICRaffle.FetchHistoryFirstPage()
     self = ICRaffle
-    local requested = RequestGuildHistoryCategoryNewest(self.guild_id, self.gh_category)
-    self.Debug("requested newest: %s",tostring(requested))
+    local requested = RequestGuildHistoryCategoryNewest(    
+                              self.guild_id
+                            , self.guild_history_category )
+    -- self.Debug("requested newest: %s",tostring(requested))
                         -- Returns false when there's no more to request.
     if not requested then
         self.OnFetchHistoryComplete()
@@ -70,8 +74,10 @@ function ICRaffle.FetchHistoryNextPage()
     local requested = nil
     if not self.GuildHistoryOldEnough() then
                         -- Returns false when there's no more to request.
-        requested = RequestGuildHistoryCategoryOlder(self.guild_id, self.gh_category)
-        self.Debug("requested older: %s", tostring(requested))
+        requested = RequestGuildHistoryCategoryOlder(
+                          self.guild_id
+                        , self.guild_history_category )
+        -- self.Debug("requested older: %s", tostring(requested))
     end
     if not requested then
         self.OnFetchHistoryComplete()
@@ -92,8 +98,14 @@ function ICRaffle.OnGuildHistoryResponseReceived(event_code, guild_id, category)
 end
 
 function ICRaffle.ReportGuildHistoryStatus()
-    local event_ct = GetNumGuildEvents(self.guild_id, self.gh_category)
-    local event = { GetGuildEventInfo(self.guild_id, self.gh_category, event_ct) }
+    local event_ct = GetNumGuildEvents( 
+                          self.guild_id
+                        , self.guild_history_category )
+    local event = { GetGuildEventInfo(
+                          self.guild_id
+                        , self.guild_history_category
+                        , event_ct
+                        ) }
     local secs_ago = (event and event[2])
     local time_ago = ""
     if secs_ago then
@@ -109,8 +121,14 @@ end
 function ICRaffle.GuildHistoryOldEnough()
     local self = ICRaffle
     if not self.saved_var.roster_last_scan_ts then return nil end
-    local event_ct = GetNumGuildEvents(self.guild_id, self.gh_category)
-    local event    = { GetGuildEventInfo(self.guild_id, self.gh_category, event_ct) }
+    local event_ct = GetNumGuildEvents(
+                          self.guild_id
+                        , self.guild_history_category )
+    local event    = { GetGuildEventInfo(
+                          self.guild_id
+                        , self.guild_history_category
+                        , event_ct
+                        ) }
     local secs_ago = (event and event[2])
     local event_ts = ICRaffle.SecsAgoToTS(secs_ago)
     return event_ts < self.saved_var.roster_last_scan_ts
@@ -118,6 +136,9 @@ end
 
 function ICRaffle.OnFetchHistoryComplete()
     self = ICRaffle
+    EVENT_MANAGER:UnregisterForEvent(
+              self.name
+            , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED )
     self.ScanHistory()
     self.ScanRoster()
 end
@@ -132,12 +153,16 @@ end
 function ICRaffle.ScanHistory()
     self = ICRaffle
     self.oldest_join_ts = nil
-    local event_ct = GetNumGuildEvents(self.guild_id, self.gh_category)
+    local event_ct = GetNumGuildEvents(
+                          self.guild_id
+                        , self.guild_history_category )
     local join_ct  = 0
     self.Debug("event_ct:"..tostring(event_ct))
     for i = 1,event_ct do
-        local x = { GetGuildEventInfo(self.guild_id, self.gh_category, i) }
-        local j = self.RecordJoinEvent(x)
+        local event = { GetGuildEventInfo(
+                          self.guild_id
+                        , self.guild_history_category, i ) }
+        local j = self.RecordJoinEvent(event)
         join_ct = join_ct + j
     end
     self.saved_var.history = r
@@ -159,6 +184,8 @@ function ICRaffle.RecordJoinEvent(event)
         user.join_ts = join_ts
         user.invitor = invitor or user.invitor
         self.oldest_join_ts = earlier(self.oldest_join_ts, join_ts)
+        -- self.Debug("invitee:%s  invitor:%s join_ts:%d"
+        --           , invitee, invitor, join_ts )
         return 1
     end
     return 0
@@ -181,7 +208,7 @@ function ICRaffle.ScanRoster()
         local ur = self.User(user_id)
         ur.is_member  = true
         ur.rank_index = rank_index
-        ur.guild_node = note
+        ur.guild_note = note
     end
 
                         -- Purge the unworthy

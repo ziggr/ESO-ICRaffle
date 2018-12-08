@@ -10,6 +10,8 @@ function UserRecord:New()
     ,   is_member   = nil   -- true if member of guild, nil if not
     ,   rank_index  = nil   -- peon, guild master, which rank?
     ,   guild_note  = nil   -- "Top seller!" or whatever
+    ,   invitor     = nil   -- "@OtherGuildie"
+    ,   join_ts     = nil   -- seconds since 1970-01-01 
     }
     setmetatable(o,self)
     self.__index = self
@@ -22,22 +24,28 @@ end
 -- down to a single  string for easier storage and parsing. But for now, I'll
 -- leave them as tables of key/value pairs for easier debugging.
 
+                        -- Flat/exportable fields written to SavedVariables
+UserRecord.FIELD_LIST = {
+        "user_id"    
+    ,   "is_member"  
+    ,   "rank_index" 
+    ,   "guild_note" 
+    ,   "invitor"    
+    ,   "join_ts"    
+}
 function UserRecord:ToSaved()
     local r = {}
-
-    r.user_id    = self.user_id
-    r.is_member  = self.is_member
-    r.rank_index = self.rank_index
-    r.guild_note = self.guild_note
+    for _,fn in ipairs(UserRecord.FIELD_LIST) do
+        r[fn] = self[fn]
+    end
     return r
 end
 
 function UserRecord:FromSaved(u)
     local r = UserRecord:New()
-    r.user_id    = u.user_id
-    r.is_member  = u.is_member
-    r.rank_index = u.rank_index
-    r.guild_note = u.guild_note
+    for _,fn in ipairs(UserRecord.FIELD_LIST) do
+        r[fn] = u[fn]
+    end
     return r
 end
 
@@ -78,13 +86,7 @@ end
 function ICRaffle.UserRecordsToSavedVars()
     local roster = {}
     for user_id in sorted_keys(self.user_records) do
-        -- if not user_id then 
-        --     ICRaffle.Error("wha?")
-        --     break
-        -- end
-        
         local ur = self.user_records[user_id]
--- ICRaffle.Debug("u:%s = %s",tostring(user_id),tostring(ur))
         local sv = ur:ToSaved()
         table.insert(roster, sv)
     end
