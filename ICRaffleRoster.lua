@@ -141,6 +141,7 @@ function ICRaffle.OnFetchHistoryComplete()
             , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED )
     self.ScanHistory()
     self.ScanRoster()
+    self.ScanRanks() -- could move this out to "only at explicit save" time.
 end
 
 local function earlier(a,b)
@@ -232,3 +233,19 @@ function ICRaffle.ScanRoster()
              , ICRaffle.color.white )
 end
 
+function ICRaffle.ScanRanks()
+    self = ICRaffle
+    local guild_rank = {}
+    local guild_id   = GetGuildId(self.saved_var.guild_index)
+    local rank_ct    = GetNumGuildRanks(guild_id)
+    for rank_index = 1,rank_ct do
+        local rank_name = GetGuildRankCustomName(guild_id, rank_index)
+                        -- Kudos to Ayantir's GMen for pointing me to
+                        -- GetFinalGuildRankName()
+        if rank_name == "" then
+            rank_name = GetFinalGuildRankName(guild_id, rank_index)
+        end
+        guild_rank[rank_index] = rank_name
+    end
+    self.saved_var.guild_rank = guild_rank
+end
