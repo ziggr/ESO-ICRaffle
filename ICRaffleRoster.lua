@@ -38,10 +38,10 @@ end
 function ICRaffle.FetchRosterHistoryStart()
     self = ICRaffle
     self.roster_fetcher = ICRaffle.GuildHistoryFetcher:New(
-        { guild_id = = GetGuildId(self.saved_var.guild_index)
+        { guild_id      = GetGuildId(self.saved_var.guild_index)
         , guild_history_category = GUILD_HISTORY_GENERAL
         , old_enough_ts = self.saved_var.roster_last_scan_ts
-        , func_complete = ICRaffle.OnFetchRosterHistoryComplete()
+        , func_complete = ICRaffle.OnFetchRosterHistoryComplete
         })
     self.roster_fetcher:Start()
 end
@@ -64,22 +64,23 @@ end
 function ICRaffle.ScanRosterHistory()
     self = ICRaffle
     self.oldest_join_ts = nil
+    local guild_id = GetGuildId(self.saved_var.guild_index)
     local event_ct = GetNumGuildEvents(
-                          self.guild_id
-                        , self.guild_history_category )
+                          guild_id
+                        , GUILD_HISTORY_GENERAL )
     local join_ct  = 0
     self.Debug("event_ct:"..tostring(event_ct))
     for i = 1,event_ct do
         local event = { GetGuildEventInfo(
-                          self.guild_id
-                        , self.guild_history_category, i ) }
+                          guild_id
+                        , GUILD_HISTORY_GENERAL
+                        , i ) }
         local j = self.RecordJoinEvent(event)
         join_ct = join_ct + (j or 0)
         if not j then
             self.RecordLeaveEvent(event)
         end
     end
-    self.saved_var.history = r
     self.Debug("Roster history scan complete, event_ct:%d join_ct:%d"
             , event_ct, join_ct)
 end
@@ -135,8 +136,8 @@ function ICRaffle.RecordLeaveEvent(event)
         return 1
     elseif event[1] == GUILD_EVENT_GUILD_KICKED then
         local leave_ts = self.SecsAgoToTS(event[2])
-        local leaver   = event[3]
-        local kicker   = event[4]
+        local kicker   = event[3]
+        local leaver   = event[4]
         local user     = self.User(leaver)
                         -- Did we already record this leave?
         if self.TSCloseEnough(user.leave_ts, leave_ts) then

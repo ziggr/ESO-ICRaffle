@@ -4,11 +4,12 @@
 ## Author: ziggr
 ## APIVersion: 100025
 ## SavedVariables: ICRaffleVars
-## OptionalDependsOn: LibAddonMenu-2.0 MasterMerchant
+## DependsOn: LibAddonMenu-2.0 MasterMerchant
 
 ICRaffle.lua
 ICRaffleGuildHistory.lua
 ICRaffleRoster.lua
-# ICRaffleMM.lua
-# ICRaffleUI.lua
+ICRaffleBank.lua
+ICRaffleMM.lua
 ICRaffleUserRecord.lua
+# ICRaffleUI.lua

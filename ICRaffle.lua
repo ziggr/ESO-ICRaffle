@@ -78,6 +78,25 @@ function ICRaffle.TSCloseEnough(a,b)
     return a and b and math.abs(a-b) < 120
 end
 
+function ICRaffle.Earlier(a, b)
+    if not a then return b end
+    if not b then return a end
+    if a < b then return a end
+    return b
+end
+
+function ICRaffle.Later(a, b)
+    if not a then return b end
+    if not b then return a end
+    if a < b then return b end
+    return a
+end
+
+function ICRaffle.Increment(a, incr_amount)
+    if not a then return incr_amount end
+    return a + incr_amount
+end
+
 --[[
 -- UserGuildTotals -----------------------------------------------------------
 -- sub-element of UserRecord

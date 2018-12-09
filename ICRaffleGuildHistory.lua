@@ -16,13 +16,13 @@ GuildHistoryFetcher.next_id = 1
 
 function GuildHistoryFetcher:New(args)
     local o = {
-          o.guild_id               = args.guild_id
-        , o.guild_history_category = args.guild_history_category
-        , o.old_enough_ts          = args.old_enough_ts
-        , o.func_complete          = args.func_complete
-        , o.progress_msg           = args.progress_msg
+          guild_id               = args.guild_id
+        , guild_history_category = args.guild_history_category
+        , old_enough_ts          = args.old_enough_ts
+        , func_complete          = args.func_complete
+        , progress_msg           = args.progress_msg
                                      or "fetching...  event_ct: %d  %s"
-        , o.page_delay_ms          = args.page_delay_ms or 2 * 1000
+        , page_delay_ms          = args.page_delay_ms or 2 * 1000
         }
     o.id = ICRaffle.name .. "_ghf_" .. tostring(GuildHistoryFetcher.next_id)
     GuildHistoryFetcher.next_id = GuildHistoryFetcher.next_id + 1
@@ -57,7 +57,7 @@ function GuildHistoryFetcher:FetchNextPage()
         requested = RequestGuildHistoryCategoryOlder(
                           self.guild_id
                         , self.guild_history_category )
-        self.Debug("requested older: %s", tostring(requested))
+        ICRaffle.Debug("requested older: %s", tostring(requested))
     end
     if not requested then
         self:OnFetchComplete()
@@ -80,13 +80,12 @@ function GuildHistoryFetcher:ReportProgress()
     local secs_ago, event_ct = self:Oldest()
     local time_ago = ""
     if secs_ago then
-        time_ago = self.SecsAgoToString(secs_ago)
+        time_ago = ICRaffle.SecsAgoToString(secs_ago)
     end
     ICRaffle.Debug(self.progress_msg, event_ct, time_ago)
 end
 
 function GuildHistoryFetcher:OldEnough()
-    local self = ICRaffle
     if not self.old_enough_ts then return nil end
     local secs_ago, event_ct = self:Oldest()
     local event_ts = ICRaffle.SecsAgoToTS(secs_ago)
@@ -106,6 +105,7 @@ function GuildHistoryFetcher:Oldest()
 end
 
 function GuildHistoryFetcher:OnFetchComplete()
+    ICRaffle.Debug("unregistered for guild history")
     EVENT_MANAGER:UnregisterForEvent(
               self.id
             , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED )

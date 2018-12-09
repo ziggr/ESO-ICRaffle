@@ -53,3 +53,15 @@ function ICRaffle.FetchMMDateRanges()
     ICRaffle.mm_date_ranges = r
     return ICRaffle.mm_date_ranges
 end
+
+                        -- Fill in begin/end timestamps for "Last Week"
+function ICRaffle.MMCalcSavedTS()
+    local self = ICRaffle
+                        -- Use the start/end timestamps chosen from
+                        -- the UI dropdown.
+    local i = self.saved_var.mm_date_index
+    local r = self.FetchMMDateRanges()
+    self.saved_begin_ts = r[i].start_ts
+    self.saved_end_ts   = r[i].end_ts
+end
+

@@ -14,6 +14,7 @@ function UserRecord:New()
     ,   kicker      = nil   -- "@SomeGMLikeUser"
     ,   join_ts     = nil   -- seconds since 1970-01-01
     ,   leave_ts    = nil   -- "
+    ,   gold        = nil   -- { event_ct, total, earliest_ts, latest_ts }
     }
     setmetatable(o,self)
     self.__index = self
@@ -36,6 +37,7 @@ UserRecord.FIELD_LIST = {
     ,   "kicker"
     ,   "join_ts"
     ,   "leave_ts"
+    ,   "gold"
 }
 function UserRecord:ToSaved()
     local r = {}
@@ -54,6 +56,7 @@ function UserRecord:FromSaved(u)
 end
 
 function ICRaffle.User(user_id)
+    local self = ICRaffle
     if not self.user_records[user_id] then
         local ur = UserRecord:New()
         ur.user_id = user_id
@@ -97,4 +100,12 @@ function ICRaffle.UserRecordsToSavedVars()
     self.saved_var.roster = roster
 end
 
+-- Absorbing data from events ------------------------------------------------
 
+function UserRecord:RecordGoldDeposit(ts, gold_ct)
+    self.gold = self.gold or {}
+    self.gold.event_ct    = ICRaffle.Increment(self.gold.event_ct   )
+    self.gold.total       = ICRaffle.Increment(self.gold.total      , gold_ct)
+    self.gold.earliest_ts = ICRaffle.Earlier  (self.gold.earliest_ts, ts)
+    self.gold.latest_ts   = ICRaffle.Later    (self.gold.latest_ts  , ts)
+end

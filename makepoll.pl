@@ -19,8 +19,10 @@ sub dirls($)
 @files = ( 'Makefile' );
 # push @files, dirls('src');
 push @files, 'ICRaffle.lua';
-push @files, 'ICRaffleRoster.lua';
+push @files, 'ICRaffleBank.lua';
+push @files, 'ICRaffleGuildHistory.lua';
 push @files, 'ICRaffleMM.lua';
+push @files, 'ICRaffleRoster.lua';
 push @files, 'ICRaffleUI.lua';
 push @files, 'ICRaffleUserRecord.lua';
 print join("\n", @files) . "\n";
