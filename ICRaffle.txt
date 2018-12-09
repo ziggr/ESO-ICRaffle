@@ -5,6 +5,7 @@
 ## APIVersion: 100025
 ## SavedVariables: ICRaffleVars
 ## DependsOn: LibAddonMenu-2.0 MasterMerchant
+## OptionalDependsOn: LibSlashCommander
 
 ICRaffle.lua
 ICRaffleGuildHistory.lua
@@ -12,4 +13,4 @@ ICRaffleRoster.lua
 ICRaffleBank.lua
 ICRaffleMM.lua
 ICRaffleUserRecord.lua
-# ICRaffleUI.lua
+ICRaffleUI.lua

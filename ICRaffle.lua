@@ -40,7 +40,7 @@ ICRaffle.color.red   = "|cFF6666"
 ICRaffle.color.green = "|c66FF66"
 ICRaffle.color.white = "|cFFFFFF"
 function ICRaffle.Debug(msg, ...)
-    d(ICRaffle.color.dark..ICRaffle.name..": "..string.format(msg, ...))
+    -- d(ICRaffle.color.dark..ICRaffle.name..": "..string.format(msg, ...))
 end
 function ICRaffle.Info(msg, ...)
     d(ICRaffle.color.grey..ICRaffle.name..": "..string.format(msg, ...))
@@ -121,6 +121,17 @@ function ICRaffle.Reset()
     ICRaffle.Info("Data reset.")
 end
 
+function ICRaffle.GuildNameList()
+    local r = {}
+    for guild_index = 1, MAX_GUILDS do
+        local guild_id   = GetGuildId(guild_index)
+        local guild_name = GetGuildName(guild_id)
+        table.insert(r,guild_name)
+    end
+    return r
+end
+
+
 -- Slash Commands ------------------------------------------------------------
 
 function ICRaffle.RegisterSlashCommands()
@@ -169,6 +180,7 @@ function ICRaffle.StartTheBigScan()
     ICRaffle.FetchBankHistoryStart()
 end
 
+
 -- Init ----------------------------------------------------------------------
 
 function ICRaffle.OnAddOnLoaded(event, addonName)
@@ -177,6 +189,7 @@ function ICRaffle.OnAddOnLoaded(event, addonName)
 end
 
 function ICRaffle:Initialize()
+ICRaffle.GuildNameList()
     self.saved_var = ZO_SavedVars:NewAccountWide(
                               "ICRaffleVars"
                             , self.saved_var_version
@@ -184,7 +197,7 @@ function ICRaffle:Initialize()
                             , self.default
                             )
     self.SavedVarsToUserRecords()
-    -- self:CreateSettingsWindow()
+    self.CreateSettingsWindow()
 
     self.RegisterSlashCommands()
 end
