@@ -49,12 +49,33 @@ function ICRaffle.Error(msg, ...)
     d(ICRaffle.color.red ..ICRaffle.name..": "..string.format(msg, ...))
 end
 
+function ICRaffle.TodayTS()
+                        -- Copied straight from MasterMerchant_Guild.lua
+                        -- Returns the timestamp for 12 midnight that started
+                        -- today.
+      return GetTimeStamp() - GetSecondsSinceMidnight()
+end
+
 function ICRaffle.SecsAgoToTS(secs_ago)
     return GetTimeStamp() - secs_ago
 end
 
-function ICRaffle.User(user_name)
-    return {}
+function ICRaffle.SecsAgoToString(secs_ago)
+    time_ago = FormatTimeSeconds(
+              secs_ago
+            , TIME_FORMAT_STYLE_SHOW_LARGEST_UNIT_DESCRIPTIVE
+            )
+    time_ago = time_ago .. " ago"
+    return time_ago
+end
+
+
+function ICRaffle.TSCloseEnough(a,b)
+                        -- There is JUST enough slop in timestamps, especially
+                        -- when we're given "seconds ago" and then convert them
+                        -- back to seconds-since-the-epoch, that "within 2
+                        -- minutes" is close enough.
+    return a and b and math.abs(a-b) < 120
 end
 
 --[[

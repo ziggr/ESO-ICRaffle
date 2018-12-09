@@ -11,7 +11,9 @@ function UserRecord:New()
     ,   rank_index  = nil   -- peon, guild master, which rank?
     ,   guild_note  = nil   -- "Top seller!" or whatever
     ,   invitor     = nil   -- "@OtherGuildie"
-    ,   join_ts     = nil   -- seconds since 1970-01-01 
+    ,   kicker      = nil   -- "@SomeGMLikeUser"
+    ,   join_ts     = nil   -- seconds since 1970-01-01
+    ,   leave_ts    = nil   -- "
     }
     setmetatable(o,self)
     self.__index = self
@@ -26,12 +28,14 @@ end
 
                         -- Flat/exportable fields written to SavedVariables
 UserRecord.FIELD_LIST = {
-        "user_id"    
-    ,   "is_member"  
-    ,   "rank_index" 
-    ,   "guild_note" 
-    ,   "invitor"    
-    ,   "join_ts"    
+        "user_id"
+    ,   "is_member"
+    ,   "rank_index"
+    ,   "guild_note"
+    ,   "invitor"
+    ,   "kicker"
+    ,   "join_ts"
+    ,   "leave_ts"
 }
 function UserRecord:ToSaved()
     local r = {}
