@@ -13,6 +13,7 @@ function ICRaffle.FetchBankHistoryStart()
         , guild_history_category = GUILD_HISTORY_BANK
         , old_enough_ts = self.saved_begin_ts
         , func_complete = ICRaffle.OnFetchBankHistoryComplete
+        , progress_msg  = "Fetching guild bank deposits... events:%d  %s"
         })
     self.bank_fetcher:Start()
 end

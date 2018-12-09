@@ -82,7 +82,7 @@ function GuildHistoryFetcher:ReportProgress()
     if secs_ago then
         time_ago = ICRaffle.SecsAgoToString(secs_ago)
     end
-    ICRaffle.Debug(self.progress_msg, event_ct, time_ago)
+    ICRaffle.Info(self.progress_msg, event_ct, time_ago)
 end
 
 function GuildHistoryFetcher:OldEnough()

@@ -42,6 +42,7 @@ function ICRaffle.FetchRosterHistoryStart()
         , guild_history_category = GUILD_HISTORY_GENERAL
         , old_enough_ts = self.saved_var.roster_last_scan_ts
         , func_complete = ICRaffle.OnFetchRosterHistoryComplete
+        , progress_msg  = "Fetching guild invites... events:%d  %s"
         })
     self.roster_fetcher:Start()
 end
