@@ -14,7 +14,12 @@ function UserRecord:New()
     ,   kicker      = nil   -- "@SomeGMLikeUser"
     ,   join_ts     = nil   -- seconds since 1970-01-01
     ,   leave_ts    = nil   -- "
-    ,   gold        = nil   -- { event_ct, total, earliest_ts, latest_ts }
+
+                            -- event totals/summaries:
+                            -- { event_ct, total, earliest_ts, latest_ts }
+    ,   gold        = nil   -- guild bank gold deposits
+    ,   sold        = nil   -- guild trader sales
+    ,   bought      = nil   -- guild trader purchases
     }
     setmetatable(o,self)
     self.__index = self
@@ -38,6 +43,8 @@ UserRecord.FIELD_LIST = {
     ,   "join_ts"
     ,   "leave_ts"
     ,   "gold"
+    ,   "sold"
+    ,   "bought"
 }
 function UserRecord:ToSaved()
     local r = {}
@@ -100,12 +107,40 @@ function ICRaffle.UserRecordsToSavedVars()
     self.saved_var.roster = roster
 end
 
+
 -- Absorbing data from events ------------------------------------------------
 
-function UserRecord:RecordGoldDeposit(ts, gold_ct)
-    self.gold = self.gold or {}
-    self.gold.event_ct    = ICRaffle.Increment(self.gold.event_ct   )
-    self.gold.total       = ICRaffle.Increment(self.gold.total      , gold_ct)
-    self.gold.earliest_ts = ICRaffle.Earlier  (self.gold.earliest_ts, ts)
-    self.gold.latest_ts   = ICRaffle.Later    (self.gold.latest_ts  , ts)
+function UserRecord.RecordEvent(field, gold_ct, ts)
+    local r = field or {}
+-- if type(r) ~= "table" then r = {} end  -- temp reset from previous data
+    r.event_ct    = ICRaffle.Increment(r.event_ct   )
+    r.total       = ICRaffle.Increment(r.total      , gold_ct)
+    r.earliest_ts = ICRaffle.Earlier  (r.earliest_ts, ts)
+    r.latest_ts   = ICRaffle.Later    (r.latest_ts  , ts)
+    return r
+end
+
+function UserRecord:RecordGoldDeposit(gold_ct, ts)
+    self.gold = self.RecordEvent(self.gold, gold_ct, ts)
+end
+
+function UserRecord:RecordPurchase(gold_ct, ts)
+    self.bought = self.RecordEvent(self.bought, gold_ct, ts)
+end
+
+function UserRecord:RecordSale(gold_ct, ts)
+    self.sold = self.RecordEvent(self.sold, gold_ct, ts)
+end
+
+
+-- Resetting before accumulating new totals ----------------------------------
+
+function ICRaffle.ResetUserRecordFields(field_name, ...)
+    local self = ICRaffle
+    for user_id, user_record in pairs(self.user_records) do
+        user_record[field_name] = nil
+        for _,fn in ipairs({...}) do
+            user_record[fn] = nil
+        end
+    end
 end

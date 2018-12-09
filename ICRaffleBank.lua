@@ -25,9 +25,7 @@ function ICRaffle.OnFetchBankHistoryComplete()
 end
 
 function ICRaffle.ClearBankHistory()
-    for user_id, user_record in pairs(self.user_records) do
-        user_record.gold = nil
-    end
+    self.ResetUserRecordFields("gold")
 end
 
 function ICRaffle.ScanBankHistory()
@@ -81,7 +79,7 @@ end
 function ICRaffle.RecordDeposit(deposit)
     local self = ICRaffle
     local ur = self.User(deposit.user_id)
-    ur:RecordGoldDeposit(deposit.ts, deposit.gold_ct)
+    ur:RecordGoldDeposit(deposit.gold_ct, deposit.ts)
 end
 
 function ICRaffle.DepositToString(deposit)
