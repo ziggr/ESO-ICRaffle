@@ -63,6 +63,7 @@ function ICRaffle.ScanBankHistory()
         end
     end
     self.saved_var.deposit_list = deposit_list
+    self.saved_var.deposit_list_schema = ICRaffle.DepositSchema()
 
     local gold_str = ZO_CurrencyControl_FormatCurrency(
                               total_gold
@@ -104,4 +105,12 @@ function ICRaffle.DepositToString(deposit)
                         , deposit.user_id
                         , deposit.gold_ct
                         )
+end
+
+function ICRaffle.DepositSchema()
+    local r = { "timestamp"
+              , "user"
+              , "gold"
+              }
+    return table.concat(r,"\t")
 end

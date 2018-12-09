@@ -104,6 +104,23 @@ function ICRaffle.ReloadUIReminder()
              , ICRaffle.color.white )
 end
 
+function ICRaffle.Reset()
+    local field_names = {
+                          "deposit_list"
+                        , "deposit_list_schema"
+                        , "guild_rank"
+                        , "roster"
+                        , "roster_last_scan_ts"
+                        , "roster_schema"
+                        , "sale_list"
+                        , "sale_list_schema"
+                        }
+    for _,fn in ipairs(field_names) do
+        ICRaffle.saved_var[fn] = nil
+    end
+    ICRaffle.Info("Data reset.")
+end
+
 -- Slash Commands ------------------------------------------------------------
 
 function ICRaffle.RegisterSlashCommands()
@@ -115,14 +132,29 @@ function ICRaffle.RegisterSlashCommands()
         local cmd = lsc:Register( "/icraffle"
                                 , function(arg) ICRaffle.SlashCommand(arg) end
                                 , "Record guild sales and bank deposit history")
+
+        local sub_reset = cmd:RegisterSubCommand()
+        sub_reset:AddAlias("reset")
+        sub_reset:SetCallback(function() ICRaffle.SlashCommand("reset") end)
+        sub_reset:SetDescription("Reset data. Mostly for debugging.")
+
+        local sub_roster = cmd:RegisterSubCommand()
+        sub_roster:AddAlias("roster")
+        sub_roster:SetCallback(function() ICRaffle.SlashCommand("roster") end)
+        sub_roster:SetDescription("Fetch guild roster. Mostly for debugging.")
     else
         SLASH_COMMANDS["/icraffle"] = ICRaffle.SlashCommand
     end
 end
 
 function ICRaffle.SlashCommand(arg)
-
-    ICRaffle.StartTheBigScan()
+    if arg == "reset" then
+        ICRaffle.Reset()
+    elseif arg == "roster" then
+        ICRaffle.FetchRosterHistoryStart()
+    else
+        ICRaffle.StartTheBigScan()
+    end
 end
 
 function ICRaffle.StartTheBigScan()

@@ -32,20 +32,35 @@ end
 -- down to a single  string for easier storage and parsing. But for now, I'll
 -- leave them as tables of key/value pairs for easier debugging.
 
-                        -- Flat/exportable fields written to SavedVariables
-UserRecord.FIELD_LIST = {
-        "user_id"
-    ,   "is_member"
-    ,   "rank_index"
-    ,   "guild_note"
-    ,   "invitor"
-    ,   "kicker"
-    ,   "join_ts"
-    ,   "leave_ts"
-    ,   "gold"
-    ,   "sold"
-    ,   "bought"
-}
+function UserRecord.Schema()
+    r = {
+       "user_id"
+    ,  "is_member"
+    ,  "rank_index"
+    ,  "invitor"
+    ,  "kicker"
+    ,  "join_ts"
+    ,  "leave_ts"
+
+    ,  "gold.total"
+    ,  "gold.event_ct"
+    ,  "gold.earliest_ts"
+    ,  "gold.latest_ts"
+
+    ,  "sold.total"
+    ,  "sold.event_ct"
+    ,  "sold.earliest_ts"
+    ,  "sold.latest_ts"
+
+    ,  "bought.total"
+    ,  "bought.event_ct"
+    ,  "bought.earliest_ts"
+    ,  "bought.latest_ts"
+
+    ,  "guild_note"
+    }
+    return table.concat(r,"\t")
+end
 
 function UserRecord:ToSaved()
                         -- Stringify field values to something compact.
@@ -84,10 +99,6 @@ function UserRecord:ToSaved()
     }
 
     return table.concat(r,"\t")
-    -- for _,fn in ipairs(UserRecord.FIELD_LIST) do
-    --     r[fn] = self[fn]
-    -- end
-    -- return r
 end
 
 function UserRecord:FromSaved(s)
@@ -182,6 +193,7 @@ function ICRaffle.UserRecordsToSavedVars()
         table.insert(roster, sv)
     end
     self.saved_var.roster = roster
+    self.saved_var.roster_schema = UserRecord.Schema()
     self.ReloadUIReminder()
 end
 

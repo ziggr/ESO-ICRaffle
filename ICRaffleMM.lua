@@ -43,6 +43,7 @@ function ICRaffle.MMScan()
             end
         end
     end
+    self.saved_var.sale_list_schema = self.MMSaleSchema()
 
     local gold_str = ZO_CurrencyControl_FormatCurrency(
                               total_gold
@@ -86,6 +87,17 @@ function ICRaffle.AddMMSale(mm_sales_record)
                         )
     table.insert(self.saved_var.sale_list, sale_string)
     return 1
+end
+
+function ICRaffle.MMSaleSchema()
+    local r = { "timestamp"
+              , "gold"
+              , "seller"
+              , "buyer"
+              , "item_ct"
+              , "item_link"
+              }
+    return table.concat(r,"\t")
 end
 
 -- MM date ranges ------------------------------------------------------------
