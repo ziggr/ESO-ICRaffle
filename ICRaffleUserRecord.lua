@@ -46,20 +46,97 @@ UserRecord.FIELD_LIST = {
     ,   "sold"
     ,   "bought"
 }
+
 function UserRecord:ToSaved()
-    local r = {}
-    for _,fn in ipairs(UserRecord.FIELD_LIST) do
-        r[fn] = self[fn]
+                        -- Stringify field values to something compact.
+    local function f(f)
+        if f == nil   then return ""  end
+        if f == false then return "0" end
+        if f == true  then return "1" end
+        return tostring(f)
     end
-    return r
+
+    r = {
+       f( self.user_id                            )
+    ,  f( self.is_member                          )
+    ,  f( self.rank_index                         )
+    ,  f( self.invitor                            )
+    ,  f( self.kicker                             )
+    ,  f( self.join_ts                            )
+    ,  f( self.leave_ts                           )
+
+    ,  f( self.gold and self.gold.total           )
+    ,  f( self.gold and self.gold.event_ct        )
+    ,  f( self.gold and self.gold.earliest_ts     )
+    ,  f( self.gold and self.gold.latest_ts       )
+
+    ,  f( self.sold and self.sold.total           )
+    ,  f( self.sold and self.sold.event_ct        )
+    ,  f( self.sold and self.sold.earliest_ts     )
+    ,  f( self.sold and self.sold.latest_ts       )
+
+    ,  f( self.bought and self.bought.total       )
+    ,  f( self.bought and self.bought.event_ct    )
+    ,  f( self.bought and self.bought.earliest_ts )
+    ,  f( self.bought and self.bought.latest_ts   )
+
+    ,  f( self.guild_note                         )
+    }
+
+    return table.concat(r,"\t")
+    -- for _,fn in ipairs(UserRecord.FIELD_LIST) do
+    --     r[fn] = self[fn]
+    -- end
+    -- return r
 end
 
-function UserRecord:FromSaved(u)
-    local r = UserRecord:New()
-    for _,fn in ipairs(UserRecord.FIELD_LIST) do
-        r[fn] = u[fn]
+function UserRecord:FromSaved(s)
+    local r = { zo_strsplit("\t", s) }
+
+    local function bool(txt)
+        if txt == "" then return nil end
+        if txt == "0" then return nil end
+        return true
     end
-    return r
+    local function num(txt)
+        return tonumber(txt)
+    end
+    local function str(txt)
+        if txt == "" then return nil end
+        return txt
+    end
+
+    local ur = UserRecord:New()
+
+    ur.user_id            = str( r[ 1])
+    ur.is_member          = bool(r[ 2])
+    ur.rank_index         = num( r[ 3])
+    ur.invitor            = str( r[ 4])
+    ur.kicker             = str( r[ 5])
+    ur.join_ts            = num( r[ 6])
+    ur.leave_ts           = num( r[ 7])
+
+    ur.gold = {}
+    ur.gold.total         = num( r[ 8])
+    ur.gold.event_ct      = num( r[ 9])
+    ur.gold.earliest_ts   = num( r[10])
+    ur.gold.latest_ts     = num( r[11])
+
+    ur.sold = {}
+    ur.sold.total         = num( r[12])
+    ur.sold.event_ct      = num( r[13])
+    ur.sold.earliest_ts   = num( r[14])
+    ur.sold.latest_ts     = num( r[15])
+
+    ur.bought = {}
+    ur.bought.total       = num( r[16])
+    ur.bought.event_ct    = num( r[17])
+    ur.bought.earliest_ts = num( r[18])
+    ur.bought.latest_ts   = num( r[19])
+
+    ur.guild_note         = str( r[20])
+
+    return ur
 end
 
 function ICRaffle.User(user_id)
