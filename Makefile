@@ -11,6 +11,9 @@ put:
 get:
 	cp -f /Volumes/Elder\ Scrolls\ Online/live/SavedVariables/ICRaffle.lua data/
 
+out:
+	lua ICRaffle_to_text.lua
+
 zip:
 	-rm -rf published/ICRaffle published/ICRaffle\ x.x.x.x.zip
 	mkdir -p published/ICRaffle
