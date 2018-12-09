@@ -27,6 +27,7 @@ function ICRaffle.MMScan()
     local sales_data = MasterMerchant.salesData
     local item_id_ct = 0
     local sale_ct    = 0
+    local total_gold = 0
     for item_id,t in pairs(sales_data) do
         item_id_ct = item_id_ct + 1
         for item_index,tt in pairs(t) do
@@ -36,13 +37,22 @@ function ICRaffle.MMScan()
                     local s = self.AddMMSale(mm_sales_record)
                     if s then
                         sale_ct = sale_ct + 1
+                        total_gold = total_gold + mm_sales_record.price
                     end
                 end
             end
         end
     end
 
-    self.Info("Master Merchant scan complete. Sales records:%d", sale_ct)
+    local gold_str = ZO_CurrencyControl_FormatCurrency(
+                              total_gold
+                            , true )
+    self.Info( "Master Merchant scan complete. Sales:%s%d  %sGold:%s%s"
+             , ICRaffle.color.white
+             , sale_ct
+             , ICRaffle.color.grey
+             , ICRaffle.color.white
+             , gold_str)
 end
 
 function ICRaffle.AddMMSale(mm_sales_record)

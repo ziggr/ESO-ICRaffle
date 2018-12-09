@@ -52,7 +52,6 @@ function ICRaffle.OnFetchRosterHistoryComplete()
     self = ICRaffle
     self.ScanRosterHistory()
     self.ScanRoster()
-    self.ScanRanks() -- could move this out to "only at explicit save" time.
 end
 
 local function earlier(a,b)
@@ -180,12 +179,8 @@ function ICRaffle.ScanRoster()
                         -- Record the survivors to saved variables.
     self.user_records = self.user_records or {}
     self.saved_var.roster_last_scan_ts = self.TodayTS()
-    self.UserRecordsToSavedVars()
     self.Info("Guild roster saved. Member count: %d.", ct)
-    self.Info("Will be written to SavedVariables next %s/reloadui|r %sor %s/logout|r."
-             , ICRaffle.color.white
-             , ICRaffle.color.grey
-             , ICRaffle.color.white )
+    self.UserRecordsToSavedVars()
 end
 
 function ICRaffle.ScanRanks()

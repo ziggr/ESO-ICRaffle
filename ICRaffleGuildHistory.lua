@@ -14,6 +14,27 @@ ICRaffle.GuildHistoryFetcher = {}
 local GuildHistoryFetcher   = ICRaffle.GuildHistoryFetcher
 GuildHistoryFetcher.next_id = 1
 
+                        -- Only one async scan through guild history at a time!
+                        -- Otherwise both scanners will end up being called for
+                        -- each other's results (event listeners aren't that
+                        -- precise)
+                        --
+                        -- Yes this implies that if some OTHER addon or even
+                        -- the UI is paging through guild history while a scan
+                        -- is going on, then Bad Things Will Happen.
+                        -- Don't do that.
+
+GuildHistoryFetcher.busy    = false
+
+function GuildHistoryFetcher.ErrorIfBusy()
+    if GuildHistoryFetcher.busy then
+        self.Error("ICRaffle is already busy scanning guild history.")
+        self.Error("Try again later.")
+    end
+    return GuildHistoryFetcher.busy
+end
+
+
 function GuildHistoryFetcher:New(args)
     local o = {
           guild_id               = args.guild_id
@@ -32,6 +53,9 @@ function GuildHistoryFetcher:New(args)
 end
 
 function GuildHistoryFetcher:Start()
+    assert(not GuildHistoryFetcher.busy)
+    GuildHistoryFetcher.busy = true
+
     EVENT_MANAGER:RegisterForEvent(
               self.id
             , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED
@@ -105,6 +129,7 @@ function GuildHistoryFetcher:Oldest()
 end
 
 function GuildHistoryFetcher:OnFetchComplete()
+    GuildHistoryFetcher.busy = false
     ICRaffle.Debug("unregistered for guild history")
     EVENT_MANAGER:UnregisterForEvent(
               self.id

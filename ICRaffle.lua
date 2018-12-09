@@ -97,6 +97,45 @@ function ICRaffle.Increment(a, incr_amount)
     return a + (incr_amount or 1)
 end
 
+function ICRaffle.ReloadUIReminder()
+    ICRaffle.Info("Will be written to SavedVariables next %s/reloadui|r %sor %s/logout|r."
+             , ICRaffle.color.white
+             , ICRaffle.color.grey
+             , ICRaffle.color.white )
+end
+
+-- Slash Commands ------------------------------------------------------------
+
+function ICRaffle.RegisterSlashCommands()
+                        -- Optional support for Sirinsidiator's most excellent
+                        -- LibSlashCommander, which gives autocompletion and
+                        -- command help strings.
+    local lsc = LibStub:GetLibrary("LibSlashCommander", true)
+    if lsc then
+        local cmd = lsc:Register( "/icraffle"
+                                , function(arg) ICRaffle.SlashCommand(arg) end
+                                , "Record guild sales and bank deposit history")
+    else
+        SLASH_COMMANDS["/icraffle"] = ICRaffle.SlashCommand
+    end
+end
+
+function ICRaffle.SlashCommand(arg)
+
+    ICRaffle.StartTheBigScan()
+end
+
+function ICRaffle.StartTheBigScan()
+    if ICRaffle.GuildHistoryFetcher.ErrorIfBusy() then return end
+
+                        -- Scan Master Merchant first, since it runs
+                        -- synchronously and near-instantaneously.
+    ICRaffle.MMScan()
+
+                        -- Guild bank gold deposit scan is async and
+                        -- might take a few seconds. Start it and walk away.
+    ICRaffle.FetchBankHistoryStart()
+end
 
 -- Init ----------------------------------------------------------------------
 
@@ -114,6 +153,8 @@ function ICRaffle:Initialize()
                             )
     self.SavedVarsToUserRecords()
     -- self:CreateSettingsWindow()
+
+    self.RegisterSlashCommands()
 end
 
 

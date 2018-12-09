@@ -5,6 +5,8 @@ ICRaffle = ICRaffle or {}
 -- Async call chain to scan all of guild bank history
 
 function ICRaffle.FetchBankHistoryStart()
+    if ICRaffle.GuildHistoryFetcher.ErrorIfBusy() then return end
+
     self = ICRaffle
     self.MMCalcSavedTS()
 
@@ -22,6 +24,7 @@ function ICRaffle.OnFetchBankHistoryComplete()
     self = ICRaffle
     self.ClearBankHistory()
     self.ScanBankHistory()
+    self.ScanRanks()
     self.UserRecordsToSavedVars()
 end
 
@@ -44,6 +47,7 @@ function ICRaffle.ScanBankHistory()
                         , GUILD_HISTORY_BANK )
     self.Debug("event_ct:"..tostring(event_ct))
     local deposit_ct = 0
+    local total_gold = 0
     for i = 1,event_ct do
         local event = { GetGuildEventInfo(
                           guild_id
@@ -55,11 +59,22 @@ function ICRaffle.ScanBankHistory()
             local j = self.RecordDeposit(deposit)
             table.insert(deposit_list, self.DepositToString(deposit))
             deposit_ct = deposit_ct + 1
+            total_gold = total_gold + deposit.gold_ct
         end
     end
     self.saved_var.deposit_list = deposit_list
-    self.Info("Guild bank history scan complete, deposit_ct:%d"
-            , deposit_ct)
+
+    local gold_str = ZO_CurrencyControl_FormatCurrency(
+                              total_gold
+                            , true )
+
+    self.Info( "Guild bank history scan complete. Deposits:%s%d  %sGold:%s%s"
+             , ICRaffle.color.white
+             , deposit_ct
+             , ICRaffle.color.grey
+             , ICRaffle.color.white
+             , gold_str
+             )
 end
 
 function ICRaffle.ToDeposit(event)

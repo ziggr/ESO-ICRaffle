@@ -105,6 +105,7 @@ function ICRaffle.UserRecordsToSavedVars()
         table.insert(roster, sv)
     end
     self.saved_var.roster = roster
+    self.ReloadUIReminder()
 end
 
 
