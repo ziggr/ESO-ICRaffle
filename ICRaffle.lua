@@ -9,11 +9,6 @@ ICRaffle.default = {
 }
 
 ICRaffle.max_guild_ct = MAX_GUILDS
-ICRaffle.fetching = {}
-
-ICRaffle.guild_name  = {} -- guild_name [guild_index] = "My Guild"
-ICRaffle.guild_index = {} -- guild_index["My Guild" ] = 1
-ICRaffle.guild_rank  = {} -- table of tables, gr[guild_index][rank]="Veteran"
 
                         -- When does the saved time range begin and end.
                         -- Seconds since the epoch.
@@ -26,11 +21,8 @@ ICRaffle.saved_end_ts   = 0
                         -- value = UserRecord
 ICRaffle.user_records = {}
 
-                        -- retry_ct[guild_index] = how many retries after
-                        -- distrusting "nah, no more history"
-ICRaffle.retry_ct   = { 0, 0, 0, 0, 0 }
-ICRaffle.max_retry_ct = 3
-                        -- Filled in partially by MMDateRanges(), fully by FetchMMDateRanges()
+                        -- Filled in partially by MMDateRanges(),
+                        -- fully by FetchMMDateRanges()
 ICRaffle.mm_date_ranges = nil
 
 ICRaffle.color = {}
@@ -118,6 +110,8 @@ function ICRaffle.Reset()
     for _,fn in ipairs(field_names) do
         ICRaffle.saved_var[fn] = nil
     end
+    ICRaffle.user_records = {}
+
     ICRaffle.Info("Data reset.")
 end
 

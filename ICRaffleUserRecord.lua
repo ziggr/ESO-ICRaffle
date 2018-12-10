@@ -72,37 +72,51 @@ function UserRecord:ToSaved()
     end
 
     r = {
-       f( self.user_id                            )
-    ,  f( self.is_member                          )
-    ,  f( self.rank_index                         )
-    ,  f( self.invitor                            )
-    ,  f( self.kicker                             )
-    ,  f( self.join_ts                            )
-    ,  f( self.leave_ts                           )
+       f( self.user_id                            )  -- "us:"..
+    ,  f( self.is_member                          )  -- "is:"..
+    ,  f( self.rank_index                         )  -- "ra:"..
+    ,  f( self.invitor                            )  -- "in:"..
+    ,  f( self.kicker                             )  -- "ki:"..
+    ,  f( self.join_ts                            )  -- "jo:"..
+    ,  f( self.leave_ts                           )  -- "le:"..
 
-    ,  f( self.gold and self.gold.total           )
-    ,  f( self.gold and self.gold.event_ct        )
-    ,  f( self.gold and self.gold.earliest_ts     )
-    ,  f( self.gold and self.gold.latest_ts       )
+    ,  f( self.gold and self.gold.total           )  -- "g.t:"..
+    ,  f( self.gold and self.gold.event_ct        )  -- "g.e:"..
+    ,  f( self.gold and self.gold.earliest_ts     )  -- "g.e:"..
+    ,  f( self.gold and self.gold.latest_ts       )  -- "g.l:"..
 
-    ,  f( self.sold and self.sold.total           )
-    ,  f( self.sold and self.sold.event_ct        )
-    ,  f( self.sold and self.sold.earliest_ts     )
-    ,  f( self.sold and self.sold.latest_ts       )
+    ,  f( self.sold and self.sold.total           )  -- "s.t:"..
+    ,  f( self.sold and self.sold.event_ct        )  -- "s.e:"..
+    ,  f( self.sold and self.sold.earliest_ts     )  -- "s.e:"..
+    ,  f( self.sold and self.sold.latest_ts       )  -- "s.l:"..
 
-    ,  f( self.bought and self.bought.total       )
-    ,  f( self.bought and self.bought.event_ct    )
-    ,  f( self.bought and self.bought.earliest_ts )
-    ,  f( self.bought and self.bought.latest_ts   )
+    ,  f( self.bought and self.bought.total       )  -- "b.t:"..
+    ,  f( self.bought and self.bought.event_ct    )  -- "b.e:"..
+    ,  f( self.bought and self.bought.earliest_ts )  -- "b.e:"..
+    ,  f( self.bought and self.bought.latest_ts   )  -- "b.l:"..
 
-    ,  f( self.guild_note                         )
+    ,  f( self.guild_note                         )  -- "gn:"..
     }
 
     return table.concat(r,"\t")
 end
 
+-- From http://lua-users.org/wiki/SplitJoin
+local function split(str,sep)
+    if not sep then sep = "\t" end
+    local ret={}
+    local n=1
+    for w in str:gmatch("([^"..sep.."]*)") do
+        ret[n] = ret[n] or w -- only set once (so the blank after a string is ignored)
+        if w=="" then
+            n = n + 1
+        end -- step forwards on a blank but not a string
+    end
+    return ret
+end
+
 function UserRecord:FromSaved(s)
-    local r = { zo_strsplit("\t", s) }
+    local r = split(s,"\t")
 
     local function bool(txt)
         if txt == "" then return nil end
@@ -115,6 +129,12 @@ function UserRecord:FromSaved(s)
     local function str(txt)
         if txt == "" then return nil end
         return txt
+    end
+    local function nil_if_empty(t)
+        for k,v in pairs(t) do
+            return t -- has at least one key/value pair
+        end
+        return nil -- has no key/value pairs.
     end
 
     local ur = UserRecord:New()
@@ -132,18 +152,21 @@ function UserRecord:FromSaved(s)
     ur.gold.event_ct      = num( r[ 9])
     ur.gold.earliest_ts   = num( r[10])
     ur.gold.latest_ts     = num( r[11])
+    ur.gold = nil_if_empty(ur.gold)
 
     ur.sold = {}
     ur.sold.total         = num( r[12])
     ur.sold.event_ct      = num( r[13])
     ur.sold.earliest_ts   = num( r[14])
     ur.sold.latest_ts     = num( r[15])
+    ur.sold = nil_if_empty(ur.sold)
 
     ur.bought = {}
     ur.bought.total       = num( r[16])
     ur.bought.event_ct    = num( r[17])
     ur.bought.earliest_ts = num( r[18])
     ur.bought.latest_ts   = num( r[19])
+    ur.bought = nil_if_empty(ur.bought)
 
     ur.guild_note         = str( r[20])
 
