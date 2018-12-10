@@ -37,6 +37,7 @@ end
 
 function ICRaffle.FetchRosterHistoryStart()
     self = ICRaffle
+    self.scanning = true
     self.roster_fetcher = ICRaffle.GuildHistoryFetcher:New(
         { guild_id      = GetGuildId(self.saved_var.guild_index)
         , guild_history_category = GUILD_HISTORY_GENERAL
@@ -50,6 +51,11 @@ end
 
 function ICRaffle.OnFetchRosterHistoryComplete()
     self = ICRaffle
+    if not self.scanning then
+        self.Debug("Second-or-later call to OnFetchRosterHistoryComplete() ignored.")
+        return
+    end
+    self.scanning = false
     self.ScanRosterHistory()
     self.ScanRoster()
 end
