@@ -35,13 +35,16 @@ To produce the exact output format that you need, write your own text file conve
 3. Log into the game.
    ICRaffle fetches guild roster history. The first time this runs, it can take a few minutes. Later fetches will only take a second or two. The scan is intentionally throttled to avoid being kicked from server for too many API requests.
    ![chat_1_invites_in_progress](doc/img/chat_1_invites_in_progress.jpg)
-4. Wait until ICRaffle finishes.
+4. Wait until ICRaffle finishes.<br />
    ![chat_2_invites_done](doc/img/chat_2_invites_done.jpg)
-   You do not have to `/reloadui` or `/logout` right away. You can wait until after the next  steps. Or not. Your call.
+
+   You do not have to `/reloadui` or `/logout` right away. You can wait until after the next steps. Or not. Your call.
 5. Run `/icraffle` to fetch guild sales and donation history:
-    ![chat_3_icraffle_entry](doc/img/chat_3_icraffle_entry.jpg)
-    This also can take a few seconds to complete:
-    ![chat_4_icraffle_done](doc/img/chat_4_icraffle_done.jpg)
+   ![chat_3_icraffle_entry](doc/img/chat_3_icraffle_entry.jpg)
+
+   This also can take a few seconds to complete:<br />
+   ![chat_4_icraffle_done](doc/img/chat_4_icraffle_done.jpg)
+
 6. `/reloadui` to write all data to `SavedVariables/ICRaffle.lua`
 
 At this point you now have a SavedVariables text file. Process it into whatever spreadsheet or external programming you need.
