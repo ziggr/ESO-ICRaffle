@@ -18,6 +18,8 @@ zip:
 	-rm -rf published/ICRaffle published/ICRaffle\ x.x.x.x.zip
 	mkdir -p published/ICRaffle
 	cp ./ICRaffle* published/ICRaffle/
-	cd published; zip -r ICRaffle\ x.x.x.x.zip ICRaffle
+	cp ./README.md published/ICRaffle/
+	cp -r ./doc published/ICRaffle/
+	cd published; zip -r ICRaffle\ x.x.x.zip ICRaffle
 	-rm -rf published/ICRaffle
 
